@@ -52,7 +52,11 @@ return {
   },
   {
     'nvim-treesitter/nvim-treesitter',
-    build = ':TSUpdate'
+    build = ':TSUpdate',
+    dependencies = {
+      'HiPhish/rainbow-delimiters.nvim',
+      'nvim-treesitter/nvim-treesitter-textobjects'
+    }
   },
   'mbbill/undotree',
   'tpope/vim-fugitive',
