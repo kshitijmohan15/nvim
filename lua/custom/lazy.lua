@@ -13,6 +13,12 @@ vim.opt.rtp:prepend(lazypath)
 
 return {
   {
+    'stevearc/oil.nvim',
+    opts = {},
+    dependencies = { { "echasnovski/mini.icons", opts = {} } },
+    lazy = false,
+  },
+  {
     'nvim-telescope/telescope.nvim',
     tag = '0.1.8',
     dependencies = { 'nvim-lua/plenary.nvim' }
@@ -85,6 +91,60 @@ return {
     "ThePrimeagen/harpoon",
     branch = "harpoon2",
     dependencies = { "nvim-lua/plenary.nvim" }
-  }
+  },
+  {
+    'CRAG666/betterTerm.nvim',
+    keys = {
+      {
+        mode = 'n',
+        '<leader>to',
+        function()
+          require('betterTerm').open()
+        end,
+        desc = 'Open terminal (main)',
+      },
+      {
+        mode = 'n',
+        '<leader>tn',
+        function()
+          require('betterTerm').open(1)
+        end,
+        desc = 'Open terminal (secondary)',
+      },
+      {
+        mode = 'n',
+        '<leader>tt',
+        function()
+          require('betterTerm').select()
+        end,
+        desc = 'Select terminal',
+      },
+    },
+    opts = {
+      position = 'bot',
+      size = 15,
+      startInserted = true,
+      show_tabs = true,
+      new_tab_mapping = '<C-t>',
+    },
+  },
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
+    keys = {
+      {
+        "<leader>?",
+        function()
+          require("which-key").show({ global = false })
+        end,
+        desc = "Buffer Local Keymaps (which-key)",
+      },
+    },
+  },
 }
 

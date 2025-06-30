@@ -1,12 +1,2 @@
-local plugins = {
-	{
-		"williamboman/mason.nvim",
-		opts = {
-			ensure_installed = {
-				"pyright"
-			}
-		}
-	},
-	
-}
-return plugins
+-- This file is deprecated as we're using custom.lazy for plugin configuration
+return {}

@@ -11,9 +11,14 @@ if not vim.loop.fs_stat(lazypath) then
   })
 end
 vim.opt.rtp:prepend(lazypath)
-
 -- Load custom settings
 require("custom")
 
 -- Setup lazy.nvim plugins
-require("lazy").setup("custom.lazy")
+require("lazy").setup({
+  -- Load plugins from custom.lazy
+  { import = "custom.lazy" },
+  -- Add local json-describe plugin
+  
+})
+

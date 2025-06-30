@@ -1,3 +1,62 @@
+-- Create autocmd group for LSP formatting
+local lsp_group = vim.api.nvim_create_augroup("LSPFormatting", { clear = true })
+
+-- Setup format on save
+local function setup_format_on_save(bufnr)
+    vim.api.nvim_create_autocmd("BufWritePre", {
+        group = lsp_group,
+        buffer = bufnr,
+        callback = function()
+            vim.lsp.buf.format({
+                bufnr = bufnr,
+                async = false,
+                timeout_ms = 5000,
+                filter = function(client)
+                    return client.name == "gopls"
+                end
+            })
+        end
+    })
+end
+
+-- Function to setup gopls
+local function setup_gopls()
+    local mason_registry = require("mason-registry")
+    local pkg = mason_registry.get_package("gopls")
+    
+    if not pkg then
+        return
+    end
+    
+    local install_path = pkg:get_install_path()
+    if not install_path then
+        return
+    end
+    
+    local gopls_path = install_path .. "/gopls"
+    
+    require("lspconfig").gopls.setup({
+        cmd = { gopls_path },
+        filetypes = { "go", "gomod", "gowork", "gotmpl" },
+        single_file_support = true,
+        root_dir = require("lspconfig.util").root_pattern("go.mod", ".git"),
+        on_attach = function(client, bufnr)
+            client.server_capabilities.documentFormattingProvider = true
+            setup_format_on_save(bufnr)
+        end,
+        settings = {
+            gopls = {
+                gofumpt = true,
+                analyses = {
+                    unusedparams = true,
+                },
+                staticcheck = true,
+            }
+        }
+    })
+end
+
+-- Basic mason setup only
 require("mason").setup({
     ui = {
         icons = {
@@ -8,68 +67,19 @@ require("mason").setup({
     }
 })
 
-local servers = {
-    'lua_ls',
-    'pyright',
-    'ruff',
-    'clangd',
-    'gopls',
-    'tailwindcss',
-    'html',
-    'cssls',
-    'rust_analyzer',
-    'eslint',
-    'jsonls',
-    'yamlls'
-}
-
-require("mason-lspconfig").setup({
-    ensure_installed = servers,
-    automatic_installation = true,
+-- Direct gopls setup without mason-lspconfig
+require("lspconfig").gopls.setup({
+    on_attach = function(client, bufnr)
+        client.server_capabilities.documentFormattingProvider = true
+        setup_format_on_save(bufnr)
+    end,
+    settings = {
+        gopls = {
+            gofumpt = true,
+            analyses = {
+                unusedparams = true,
+            },
+            staticcheck = true,
+        }
+    }
 })
-
--- Setup LSP servers
-local lspconfig = require('lspconfig')
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
--- Define default on_attach function
-local on_attach = function(client, bufnr)
-    -- Enable format on save
-    if client.supports_method("textDocument/formatting") then
-        vim.api.nvim_create_autocmd("BufWritePre", {
-            buffer = bufnr,
-            callback = function()
-                vim.lsp.buf.format({ bufnr = bufnr })
-            end,
-        })
-    end
-end
-
--- The capabilities are already set up in lsp.lua, so we just need basic setup here
-for _, server in ipairs(servers) do
-    if server == "ruff" then
-        lspconfig[server].setup({
-            capabilities = capabilities,
-            on_attach = function(client, bufnr)
-                on_attach(client, bufnr)
-                -- Enable formatting for Ruff
-                client.server_capabilities.documentFormattingProvider = true
-            end,
-            init_options = {
-                settings = {
-                    -- Format files on save
-                    format = true,
-                    -- Organize imports on save
-                    organizeImports = true,
-                    -- Fix all auto-fixable problems on save
-                    fixAll = true,
-                }
-            }
-        })
-    else
-        lspconfig[server].setup({
-            capabilities = capabilities,
-            on_attach = on_attach,
-        })
-    end
-end
